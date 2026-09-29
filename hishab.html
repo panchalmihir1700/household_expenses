@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ઘરનો હિસાબ | Daily Expense Tracker</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+
+:root{
+  --ink:#21302b;--muted:#7a8882;--green:#29745f;--green-dark:#1d5848;
+  --mint:#e7f2ed;--cream:#fbfaf5;--line:#e8e9e2;--yellow:#f7c957;--coral:#ec806d;
+  --card:#ffffff;--shadow:0 14px 35px rgba(37,70,57,.07);--sidebar:#21483d;--sidebar-hover:#326b59;
+}
+:root:not([data-theme="light"]){
+  --ink:#21302b;--muted:#7a8882;--green:#29745f;--green-dark:#1d5848;
+  --mint:#e7f2ed;--cream:#fbfaf5;--line:#e8e9e2;--card:#ffffff;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#e9f2ed;--muted:#93a69c;--green:#3fae8d;--green-dark:#5cc7a4;
+    --mint:#173229;--cream:#101815;--line:#233830;--card:#152520;--shadow:0 14px 35px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#e9f2ed;--muted:#93a69c;--green:#3fae8d;--green-dark:#5cc7a4;
+  --mint:#173229;--cream:#101815;--line:#233830;--card:#152520;--shadow:0 14px 35px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'DM Sans',sans-serif;transition:background .2s,color .2s}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:transparent}
+.app-shell{display:flex;min-height:100vh}
+
+.sidebar{width:244px;background:var(--sidebar);color:#e9f5ef;padding:28px 18px 22px;display:flex;flex-direction:column;flex-shrink:0}
+.brand{display:flex;align-items:center;gap:12px;padding:0 10px 34px}
+.brand-mark{display:grid;place-items:center;width:39px;height:39px;background:var(--yellow);color:#244639;border-radius:12px;font-size:25px;font-family:'Baloo 2';font-weight:700;flex-shrink:0}
+.brand strong,.brand small{display:block}
+.brand strong{font-family:'Baloo 2';font-size:20px;line-height:20px}
+.brand small{font-size:11px;color:#b7d1c5;margin-top:4px}
+.main-nav{display:grid;gap:8px}
+.nav-item{color:#aac6b9;text-align:left;padding:13px 14px;border-radius:10px;font-size:14px;display:flex;gap:13px;align-items:center;width:100%}
+.nav-item span{font-size:21px;width:21px;text-align:center}
+.nav-item.active,.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.sidebar-note{margin-top:auto;border-top:1px solid #3b6658;padding:20px 11px 0;display:flex;gap:10px;color:#a9c8bc;font-size:12px;line-height:1.45}
+.sidebar-note span{color:var(--yellow);font-size:16px}
+.sidebar-note p{margin:0}
+.sidebar-note b{color:#e3f0e9;font-weight:500}
+.theme-toggle{margin-top:16px;display:flex;align-items:center;justify-content:space-between;background:#193b31;border-radius:10px;padding:10px 12px;font-size:12px;color:#cde3d8}
+.theme-toggle button{background:#2c5c4b;border-radius:7px;padding:6px 10px;font-size:12px;color:#e9f5ef}
+.theme-toggle button.active{background:var(--yellow);color:#244639;font-weight:600}
+
+.content{flex:1;padding:31px clamp(20px,5vw,68px) 60px;max-width:1440px;margin:auto;min-width:0}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:38px;gap:16px;flex-wrap:wrap}
+.eyebrow{text-transform:uppercase;letter-spacing:1.5px;font-size:10px;font-weight:700;color:var(--green);margin:0 0 7px}
+.topbar h1,.welcome-row h2,.entry-header h2{font-family:'Baloo 2';font-weight:600;margin:0;font-size:32px;line-height:1}
+.top-actions{display:flex;align-items:center;gap:12px}
+.language-picker{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 10px;color:var(--green);font-size:13px}
+.language-picker select{border:0;background:transparent;color:var(--ink);font:inherit;outline:none;max-width:130px}
+.icon-button{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:9px 15px;color:var(--green);font-size:13px}
+.avatar{width:37px;height:37px;border-radius:50%;background:var(--green);color:white;font-family:'Baloo 2';font-size:19px;display:grid;place-items:center}
+
+.welcome-row{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:26px;flex-wrap:wrap}
+.welcome-row h2{font-size:27px}
+.welcome-row p,.entry-header p{color:var(--muted);font-size:14px;margin:7px 0 0}
+.primary-button{background:var(--green);color:#fff;padding:12px 17px;border-radius:9px;font-weight:600;font-size:13px;box-shadow:0 5px 12px rgba(41,116,95,.18);white-space:nowrap}
+.primary-button:hover{background:var(--green-dark)}
+.secondary-button{background:var(--mint);color:var(--green-dark);padding:11px 16px;border-radius:9px;font-weight:600;font-size:13px}
+.full-width{width:100%}
+
+/* budget */
+.budget-panel{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:22px;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.budget-info{flex:1;min-width:220px}
+.budget-row-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:10px}
+.budget-row-top strong{font-family:'Baloo 2';font-size:17px}
+.budget-row-top span{font-size:12px;color:var(--muted)}
+.budget-track{height:10px;border-radius:6px;background:var(--mint);overflow:hidden}
+.budget-fill{height:100%;background:var(--green);border-radius:6px;transition:width .3s}
+.budget-fill.over{background:var(--coral)}
+.budget-edit{display:flex;gap:8px;align-items:center}
+.budget-edit input{width:120px;border:1px solid var(--line);border-radius:8px;padding:9px 11px;background:var(--cream)}
+.budget-warning{font-size:12px;color:var(--coral);margin-top:6px;font-weight:600}
+
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
+.stat-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;position:relative;overflow:hidden}
+.stat-card:after{content:'';width:54px;height:54px;border-radius:50%;background:var(--mint);position:absolute;right:-14px;bottom:-16px}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.stat-value{font-family:'Baloo 2';font-size:25px;font-weight:600}
+.stat-icon{float:right;font-size:21px;color:var(--green)}
+
+.home-grid,.analysis-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}
+.calendar-panel,.quick-panel{padding:22px}
+.panel-heading{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:10px}
+.panel-heading h3{font-family:'Baloo 2';margin:0;font-size:18px}
+.panel-heading p{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+.month-controls{display:flex;gap:6px}
+.round-button{width:30px;height:30px;border-radius:50%;background:var(--mint);color:var(--green-dark);font-size:16px;display:grid;place-items:center}
+.round-button:hover{background:var(--green);color:#fff}
+.calendar-week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--muted);margin-bottom:8px}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-day{aspect-ratio:1;border-radius:9px;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:var(--ink);border:1px solid transparent}
+.cal-day.empty{background:transparent}
+.cal-day:not(.empty):hover{border-color:var(--green)}
+.cal-day .day-number{font-weight:600;font-size:13px}
+.cal-day .day-total{font-size:9px;color:var(--green-dark);font-weight:600}
+.cal-day.today{border-color:var(--yellow);border-width:2px}
+.cal-day.selected{background:var(--green);color:#fff}
+.cal-day.selected .day-total{color:#eaffef}
+.cal-day.over-budget:not(.selected){background:#fbe3dd}
+
+.text-button{color:var(--green);font-size:12.5px;font-weight:600}
+.text-button:hover{text-decoration:underline}
+.recent-row{width:100%;display:flex;justify-content:space-between;align-items:center;padding:11px 8px;border-radius:9px;text-align:left}
+.recent-row:hover{background:var(--mint)}
+.recent-date{display:flex;align-items:center;gap:10px}
+.date-badge{width:32px;height:32px;border-radius:9px;background:var(--mint);color:var(--green-dark);display:grid;place-items:center;font-family:'Baloo 2';font-weight:600;font-size:13px}
+.recent-date strong{display:block;font-size:13.5px}
+.recent-date small{color:var(--muted);font-size:11px}
+.recent-amount{font-family:'Baloo 2';font-weight:600;font-size:14px}
+.no-data{padding:26px 10px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6}
+
+.section-back{margin-bottom:14px}
+.back-button{color:var(--green);font-size:13px;font-weight:600}
+.entry-header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+.date-picker-wrap input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--card)}
+.entry-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;align-items:flex-start}
+.items-panel{padding:22px}
+.item-count{background:var(--mint);color:var(--green-dark);font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:20px}
+
+.chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{background:var(--mint);color:var(--green-dark);padding:7px 13px;border-radius:20px;font-size:12.5px;font-weight:600}
+.chip:hover{background:var(--green);color:#fff}
+.catalog-picker{width:100%}
+.catalog-heading{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px}
+.catalog-back{color:var(--green);font-size:12px;font-weight:600}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:7px;max-height:220px;overflow-y:auto;padding:1px 3px 2px 0}
+.catalog-item{display:flex;align-items:center;gap:8px;min-height:40px;border:1px solid var(--line);border-radius:8px;background:var(--cream);padding:7px 9px;text-align:left;font-size:12px}
+.catalog-item:hover{border-color:var(--green);background:var(--mint)}
+.catalog-emoji{font-size:18px}
+
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap input{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 14px 10px 34px;background:var(--cream)}
+.search-wrap span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px}
+
+.items-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.item-row{display:grid;grid-template-columns:1fr 110px 34px;gap:8px;align-items:center}
+.item-input,.price-input{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--cream);width:100%}
+.remove-item{width:34px;height:34px;border-radius:9px;background:var(--mint);color:var(--coral);font-size:16px;flex-shrink:0}
+.remove-item:hover{background:var(--coral);color:#fff}
+.add-line-button{width:100%;border:1.5px dashed var(--line);border-radius:9px;padding:12px;color:var(--green);font-weight:600;font-size:13px}
+.add-line-button:hover{border-color:var(--green);background:var(--mint)}
+.empty-state{padding:34px 10px;text-align:center;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.empty-state span{font-size:26px;color:var(--green)}
+
+.total-panel{padding:22px;position:sticky;top:20px}
+.total-label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.total-amount{font-family:'Baloo 2';font-size:38px;font-weight:700;margin:8px 0 14px;color:var(--green-dark)}
+.total-rule{height:1px;background:var(--line);margin-bottom:14px}
+.total-meta{display:flex;justify-content:space-between;font-size:13px;margin-bottom:18px;color:var(--muted)}
+.total-meta strong{color:var(--ink)}
+.save-hint{text-align:center;font-size:11px;color:var(--muted);margin:10px 0 0}
+.export-row{display:flex;gap:8px;margin-top:10px}
+.export-row button{flex:1}
+
+.month-picker{display:flex;align-items:center;gap:12px}
+.month-picker strong{font-family:'Baloo 2';font-size:16px}
+.chart-panel{padding:22px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:170px;overflow-x:auto;padding-top:14px}
+.bar-column{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:16px;flex:1;height:100%}
+.bar-value{font-size:8px;color:var(--green-dark);margin-bottom:3px;white-space:nowrap}
+.bar-fill{width:9px;background:var(--green);border-radius:4px 4px 0 0}
+.bar-label{font-size:9px;color:var(--muted);margin-top:6px}
+.category-chart{display:flex;flex-direction:column;gap:12px}
+.category-row{display:grid;grid-template-columns:90px 1fr 70px;align-items:center;gap:10px;font-size:12.5px}
+.category-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-track{height:9px;background:var(--mint);border-radius:6px;overflow:hidden}
+.category-fill{display:block;height:100%;background:var(--yellow);border-radius:6px}
+.category-amount{text-align:right;font-weight:600}
+.breakdown-panel{margin-top:18px;padding:22px}
+.breakdown-list{display:flex;flex-direction:column;gap:11px}
+.breakdown-row{display:grid;grid-template-columns:1fr 2fr 80px;align-items:center;gap:12px;font-size:13px}
+.breakdown-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.breakdown-bar{height:9px;background:var(--mint);border-radius:6px;overflow:hidden}
+.breakdown-bar span{display:block;height:100%;background:var(--green)}
+.breakdown-amount{text-align:right;font-weight:600}
+
+.view{display:none}
+.view.active{display:block}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--cream);padding:13px 18px;border-radius:11px;font-size:13px;display:flex;align-items:center;gap:14px;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast button{color:var(--yellow);font-weight:700;font-size:12.5px}
+
+@media (max-width:980px){
+  .app-shell{flex-direction:column}
+  .sidebar{width:100%;flex-direction:row;align-items:center;padding:16px}
+  .main-nav{display:flex;flex:1;overflow-x:auto}
+  .sidebar-note,.theme-toggle{display:none}
+  .home-grid,.analysis-grid,.entry-layout{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr}
+  .total-panel{position:static}
+}
+@media (max-width:520px){
+  .item-row{grid-template-columns:1fr 90px 30px}
+  .bar-chart{height:130px}
+}
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">₹</span><div><strong data-i18n="brandTitle">ઘરનો હિસાબ</strong><small data-i18n="brandTagline">સાદો અને સ્પષ્ટ</small></div></div>
+      <nav class="main-nav" aria-label="મુખ્ય મેનુ" data-i18n-aria-label="navLabel">
+        <button class="nav-item active" data-view="home"><span>⌂</span><span data-i18n="navHome">હોમ</span></button>
+        <button class="nav-item" data-view="entries"><span>▤</span><span data-i18n="navEntries">દિવસનો હિસાબ</span></button>
+        <button class="nav-item" data-view="analysis"><span>◒</span><span data-i18n="navAnalysis">માસિક વિશ્લેષણ</span></button>
+      </nav>
+      <div class="theme-toggle">
+        <span data-i18n="theme">થીમ</span>
+        <div>
+          <button id="lightBtn" data-theme="light">☀</button>
+          <button id="darkBtn" data-theme="dark">☾</button>
+        </div>
+      </div>
+      <div class="sidebar-note"><span>●</span><p><span data-i18n="sidebarNote">તમારો હિસાબ</span><br><b data-i18n="autoSaved">આપમેળે સાચવાય છે</b></p></div>
+    </aside>
+    <main class="content">
+      <header class="topbar"><div><p class="eyebrow" id="todayLabel">આજનો દિવસ</p><h1 id="pageTitle">નમસ્તે, ઘર!</h1></div><div class="top-actions"><label class="language-picker"><span aria-hidden="true">🌐</span><select id="languageSelect" aria-label="ભાષા પસંદ કરો" title="ભાષા" data-i18n-aria-label="languageLabel" data-i18n-title="languageLabel"><option value="gu" lang="gu">ગુજરાતી</option><option value="hi" lang="hi">हिन्दी</option><option value="en" lang="en">English</option></select></label><button class="icon-button" id="exportCsvButton" title="CSV ડાઉનલોડ કરો" data-i18n-title="csvDownload">⬇ CSV</button><button class="icon-button" id="todayButton" title="આજે જાઓ" data-i18n="today">આજે</button><button class="avatar" title="ઘરનો હિસાબ" data-i18n="avatarMark" data-i18n-title="brandTitle">ઘ</button></div></header>
+
+      <section class="view active" id="homeView">
+        <div class="welcome-row"><div><h2 data-i18n="homeQuestion">આજે શું ખર્ચાયું?</h2><p data-i18n="homeHint">કોઈપણ તારીખ પસંદ કરીને હિસાબ લખો.</p></div><button class="primary-button" id="addExpenseButton" data-i18n="addExpense">＋ ખર્ચ ઉમેરો</button></div>
+
+        <div class="budget-panel">
+          <div class="budget-info">
+            <div class="budget-row-top"><strong id="budgetTitle" data-i18n="budgetInitial">માસિક બજેટ સેટ કરો</strong><span id="budgetStatus"></span></div>
+            <div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div>
+            <div class="budget-warning" id="budgetWarning"></div>
+          </div>
+          <div class="budget-edit">
+            <input type="number" min="0" id="budgetInput" placeholder="₹ બજેટ રકમ" data-i18n-placeholder="budgetPlaceholder" />
+            <button class="secondary-button" id="setBudgetButton" data-i18n="setBudget">સેટ કરો</button>
+          </div>
+        </div>
+
+        <div class="stats-grid" id="homeStats"></div>
+        <div class="home-grid">
+          <section class="panel calendar-panel"><div class="panel-heading"><div><h3 data-i18n="calendar">કેલેન્ડર</h3><p id="calendarMonthLabel"></p></div><div class="month-controls"><button class="round-button" id="prevMonth" aria-label="પાછલો મહિનો" data-i18n-aria-label="previousMonth">‹</button><button class="round-button" id="nextMonth" aria-label="આગલો મહિનો" data-i18n-aria-label="nextMonth">›</button></div></div><div class="calendar-week"><span data-i18n="sun">રવિ</span><span data-i18n="mon">સોમ</span><span data-i18n="tue">મંગળ</span><span data-i18n="wed">બુધ</span><span data-i18n="thu">ગુરુ</span><span data-i18n="fri">શુક્ર</span><span data-i18n="sat">શનિ</span></div><div class="calendar-grid" id="calendarGrid"></div></section>
+          <section class="panel quick-panel"><div class="panel-heading"><div><h3 data-i18n="recentDays">તાજેતરના દિવસો</h3><p data-i18n="recentNotes">તમારી છેલ્લી નોંધો</p></div><button class="text-button" id="viewAllButton" data-i18n="viewAll">બધું જુઓ →</button></div><div id="recentDays"></div></section>
+        </div>
+      </section>
+
+      <section class="view" id="entriesView">
+        <div class="section-back"><button class="back-button" data-view="home" data-i18n="backHome">← પાછા હોમ</button></div>
+        <div class="entry-header"><div><p class="eyebrow" data-i18n="selectedDate">પસંદ કરેલી તારીખ</p><h2 id="selectedDateTitle"></h2><p id="selectedDateSub"></p></div><div class="date-picker-wrap"><input type="date" id="datePicker" /></div></div>
+        <div class="entry-layout">
+          <section class="panel items-panel">
+            <div class="panel-heading"><div><h3 data-i18n="itemsToday">આજની વસ્તુઓ</h3><p data-i18n="allExpenses">તમારા બધા ખર્ચ અહીં દેખાશે</p></div><span class="item-count" id="itemCount">0 વસ્તુ</span></div>
+            <div class="chip-row" id="quickChips"></div>
+            <div class="search-wrap"><span>🔍</span><input type="text" id="searchInput" placeholder="વસ્તુ શોધો..." data-i18n-placeholder="searchPlaceholder" /></div>
+            <div id="itemsList" class="items-list"></div>
+            <button class="add-line-button" id="addLineButton" data-i18n="addAnotherItem">＋ બીજી વસ્તુ ઉમેરો</button>
+          </section>
+          <aside class="panel total-panel">
+            <div class="total-label" data-i18n="dailyTotal">આજનો કુલ હિસાબ</div>
+            <div class="total-amount" id="dailyTotal">₹0</div>
+            <div class="total-rule"></div>
+            <div class="total-meta"><span data-i18n="totalItems">કુલ વસ્તુઓ</span><strong id="totalItems">0</strong></div>
+            <button class="primary-button full-width" id="saveDayButton" data-i18n="saveLedger">હિસાબ સાચવો</button>
+            <p class="save-hint" data-i18n="autoSaved">તમારો હિસાબ આપમેળે પણ સાચવાય છે</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="analysisView">
+        <div class="welcome-row"><div><p class="eyebrow" data-i18n="whereMoneyGoes">તમારો ખર્ચ ક્યાં જાય છે?</p><h2 data-i18n="monthlyAnalysis">માસિક વિશ્લેષણ</h2><p data-i18n="analysisHint">એક નજરમાં આખા મહિનાનો હિસાબ સમજો.</p></div><div class="month-picker"><button class="round-button" id="analysisPrev" aria-label="પાછલો મહિનો" data-i18n-aria-label="previousMonth">‹</button><strong id="analysisMonthLabel"></strong><button class="round-button" id="analysisNext" aria-label="આગલો મહિનો" data-i18n-aria-label="nextMonth">›</button></div></div>
+        <div class="stats-grid" id="analysisStats"></div>
+        <div class="analysis-grid"><section class="panel chart-panel"><div class="panel-heading"><div><h3 data-i18n="dailyExpenses">દિવસ પ્રમાણે ખર્ચ</h3><p data-i18n="dailyExpensesHint">આ મહિને કયા દિવસે વધુ ખર્ચ થયો?</p></div></div><div class="bar-chart" id="dailyChart"></div></section><section class="panel chart-panel"><div class="panel-heading"><div><h3 data-i18n="itemExpenses">વસ્તુ પ્રમાણે ખર્ચ</h3><p data-i18n="itemExpensesHint">કઈ વસ્તુમાં વધુ પૈસા જાય છે?</p></div></div><div class="category-chart" id="categoryChart"></div></section></div>
+        <section class="panel breakdown-panel"><div class="panel-heading"><div><h3 data-i18n="itemBreakdown">વસ્તુઓનો વિગતવાર હિસાબ</h3><p data-i18n="itemBreakdownHint">આ મહિનાની દરેક વસ્તુનો સરવાળો</p></div></div><div id="breakdownList" class="breakdown-list"></div></section>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAction"></button></div>
+
+<script>
+const STORAGE_KEY = 'ghar-no-hisab-expenses';
+const BUDGET_KEY = 'ghar-no-hisab-budgets';
+const THEME_KEY = 'ghar-no-hisab-theme';
+const LANGUAGE_KEY = 'ghar-no-hisab-language';
+
+const state = {
+  selectedDate: toISO(new Date()),
+  calendarDate: new Date(),
+  analysisDate: new Date(),
+  expenses: loadJSON(STORAGE_KEY, {}),
+  budgets: loadJSON(BUDGET_KEY, {}),
+  language: loadJSON(LANGUAGE_KEY, 'gu'),
+  searchTerm: '',
+  quickCategory: null,
+  lastDeleted: null
+};
+
+const defaultItems = ['દૂધ', 'ગેસ સિલિન્ડર', 'વીજળી બિલ', 'પેટ્રોલ'];
+const itemCatalogs = {
+  vegetables: {
+    label: 'શાકભાજી',
+    emoji: '🥬',
+    items: [
+      ['બટેટા', '🥔'], ['ડુંગળી', '🧅'], ['ટામેટાં', '🍅'], ['રીંગણ', '🍆'],
+      ['ભીંડા', '🥬'], ['દૂધી', '🥒'], ['તુરીયા', '🥒'], ['કારેલા', '🥒'],
+      ['ટીંડોળા', '🥒'], ['પરવળ', '🥒'], ['ગવાર', '🫛'], ['ફણસી', '🫛'],
+      ['લીલા વટાણા', '🫛'], ['કોબી', '🥬'], ['ફૂલકોબી', '🥦'], ['બ્રોકોલી', '🥦'],
+      ['ગાજર', '🥕'], ['મૂળા', '🥕'], ['બીટ', '🫜'], ['શક્કરિયા', '🍠'],
+      ['કાકડી', '🥒'], ['કેપ્સિકમ', '🫑'], ['લીલાં મરચાં', '🌶️'], ['લસણ', '🧄'],
+      ['આદુ', '🫚'], ['પાલક', '🥬'], ['મેથી', '🌿'], ['ધાણા', '🌿'],
+      ['લીલી ડુંગળી', '🧅'], ['મકાઈ', '🌽'], ['કોળું', '🎃'], ['સરગવાની શીંગ', '🌿'],
+      ['કાચું કેળું', '🍌'], ['અરબી', '🥔'], ['સુરણ', '🥔'], ['લીંબુ', '🍋']
+    ]
+  },
+  fruits: {
+    label: 'ફળ',
+    emoji: '🍎',
+    items: [
+      ['સફરજન', '🍎'], ['કેળું', '🍌'], ['કેરી', '🥭'], ['દ્રાક્ષ', '🍇'],
+      ['દાડમ', '🍎'], ['સંતરું', '🍊'], ['મોસંબી', '🍊'], ['પપૈયું', '🍈'],
+      ['તરબૂચ', '🍉'], ['ટેટી', '🍈'], ['ખરબૂચું', '🍈'], ['અનાનસ', '🍍'],
+      ['જામફળ', '🍐'], ['ચીકુ', '🍈'], ['સીતાફળ', '🍈'], ['રામફળ', '🍈'],
+      ['જાંબુ', '🫐'], ['નારિયેળ', '🥥'], ['લીચી', '🍒'], ['સ્ટ્રોબેરી', '🍓'],
+      ['નાશપાતી', '🍐'], ['કીવી', '🥝'], ['આલુબુખારા', '🍑'], ['પીચ', '🍑'],
+      ['ચેરી', '🍒'], ['અંજીર', '🫐'], ['ખજૂર', '🌴'], ['આમળા', '🟢'],
+      ['બોર', '🍒'], ['ફણસ', '🍈'], ['કમરખ', '⭐'], ['ડ્રેગન ફ્રૂટ', '🐉'],
+      ['એવોકાડો', '🥑'], ['કાળી દ્રાક્ષ', '🍇'], ['લીલું સફરજન', '🍏'], ['કાળી જામફળ', '🍐']
+    ]
+  },
+  groceries: {
+    label: 'કરિયાણું',
+    emoji: '🛒',
+    items: [
+      ['ચોખા', '🍚'], ['ઘઉંનો લોટ', '🌾'], ['બેસન', '🌾'], ['સોજી', '🌾'],
+      ['પૌંઆ', '🌾'], ['મમરા', '🍚'], ['તુવેર દાળ', '🫘'], ['મગની દાળ', '🫘'],
+      ['ચણાની દાળ', '🫘'], ['મસૂર દાળ', '🫘'], ['અડદ દાળ', '🫘'], ['રાજમા', '🫘'],
+      ['ચણા', '🫘'], ['કાબુલી ચણા', '🫘'], ['મગ', '🫘'], ['ખાદ્ય તેલ', '🫗'],
+      ['ઘી', '🧈'], ['માખણ', '🧈'], ['ખાંડ', '🧂'], ['ગોળ', '🍯'],
+      ['મીઠું', '🧂'], ['ચા', '🍵'], ['કોફી', '☕'], ['હળદર', '🟡'],
+      ['લાલ મરચું પાવડર', '🌶️'], ['ધાણા-જીરું પાવડર', '🫙'], ['જીરું', '🌿'], ['રાઈ', '🌱'],
+      ['ગરમ મસાલો', '🫙'], ['હિંગ', '🫙'], ['અથાણું', '🫙'], ['પાપડ', '🥙'],
+      ['સેવ / નમકીન', '🥨'], ['બિસ્કિટ', '🍪'], ['સાબુ', '🧼'], ['ડિટર્જન્ટ', '🧺']
+    ]
+  }
+};
+const UI_TEXT = {
+  gu: {
+    documentTitle: 'ઘરનો હિસાબ | રોજનો ખર્ચ', languageLabel: 'ભાષા', avatarMark: 'ઘ', otherItem: 'બીજી વસ્તુ', brandTitle: 'ઘરનો હિસાબ', brandTagline: 'સાદો અને સ્પષ્ટ', navLabel: 'મુખ્ય મેનુ', navHome: 'હોમ', navEntries: 'દિવસનો હિસાબ', navAnalysis: 'માસિક વિશ્લેષણ', theme: 'થીમ', sidebarNote: 'તમારો હિસાબ', autoSaved: 'આપમેળે સાચવાય છે',
+    csvDownload: 'CSV ડાઉનલોડ કરો', today: 'આજે', greeting: 'નમસ્તે, ઘર!', homeQuestion: 'આજે શું ખર્ચાયું?', homeHint: 'કોઈપણ તારીખ પસંદ કરીને હિસાબ લખો.', addExpense: '＋ ખર્ચ ઉમેરો', budgetInitial: 'માસિક બજેટ સેટ કરો', budgetPlaceholder: '₹ બજેટ રકમ', setBudget: 'સેટ કરો', calendar: 'કેલેન્ડર', previousMonth: 'પાછલો મહિનો', nextMonth: 'આગલો મહિનો',
+    sun: 'રવિ', mon: 'સોમ', tue: 'મંગળ', wed: 'બુધ', thu: 'ગુરુ', fri: 'શુક્ર', sat: 'શનિ', recentDays: 'તાજેતરના દિવસો', recentNotes: 'તમારી છેલ્લી નોંધો', viewAll: 'બધું જુઓ →', backHome: '← પાછા હોમ', selectedDate: 'પસંદ કરેલી તારીખ', itemsToday: 'આજની વસ્તુઓ', allExpenses: 'તમારા બધા ખર્ચ અહીં દેખાશે', searchPlaceholder: 'વસ્તુ શોધો...', addAnotherItem: '＋ બીજી વસ્તુ ઉમેરો', dailyTotal: 'આજનો કુલ હિસાબ', totalItems: 'કુલ વસ્તુઓ', saveLedger: 'હિસાબ સાચવો',
+    whereMoneyGoes: 'તમારો ખર્ચ ક્યાં જાય છે?', monthlyAnalysis: 'માસિક વિશ્લેષણ', analysisHint: 'એક નજરમાં આખા મહિનાનો હિસાબ સમજો.', dailyExpenses: 'દિવસ પ્રમાણે ખર્ચ', dailyExpensesHint: 'આ મહિને કયા દિવસે વધુ ખર્ચ થયો?', itemExpenses: 'વસ્તુ પ્રમાણે ખર્ચ', itemExpensesHint: 'કઈ વસ્તુમાં વધુ પૈસા જાય છે?', itemBreakdown: 'વસ્તુઓનો વિગતવાર હિસાબ', itemBreakdownHint: 'આ મહિનાની દરેક વસ્તુનો સરવાળો',
+    categoryVegetables: 'શાકભાજી', categoryFruits: 'ફળ', categoryGroceries: 'કરિયાણું', categoryPrompt: '{category} પસંદ કરો', categoryBack: '← કેટેગરી', monthBudgetSet: '{month} માટે બજેટ સેટ કરો', monthBudget: '{month} નું બજેટ: {amount}', amountSpent: '{amount} ખર્ચાયા', budgetOver: '⚠ તમે બજેટ કરતાં {amount} વધુ ખર્ચ કર્યો છે', budgetNear: '⚠ બજેટ પૂરું થવા આવ્યું છે',
+    monthSpend: 'આ મહિનાનો કુલ ખર્ચ', daysSpent: 'ખર્ચ થયેલા દિવસો', dailyAverage: 'દર દિવસની સરેરાશ', days: 'દિવસ', itemCount: '{count} વસ્તુ', itemsCount: '{count} વસ્તુઓ', noRecent: 'હજુ કોઈ હિસાબ નથી.', firstExpense: 'આજનો પહેલો ખર્ચ ઉમેરો!', noItems: 'આ તારીખે હજી કોઈ વસ્તુ ઉમેરાઈ નથી', noSearchResults: 'આ શોધ માટે કંઈ મળ્યું નહીં', itemNamePlaceholder: 'વસ્તુનું નામ', pricePlaceholder: '₹ કિંમત', deleteItem: 'કાઢી નાખો',
+    saveError: 'સાચવવામાં સમસ્યા આવી. ફરી પ્રયત્ન કરો.', saveToast: 'હિસાબ સચવાઈ ગયો', deleteToast: '"{name}" કાઢી નાખી', undo: 'પાછું લાવો', analysisTotal: 'કુલ માસિક ખર્ચ', analysisItems: 'કુલ વસ્તુઓ', highestDay: 'સૌથી વધુ ખર્ચનો દિવસ', noMonthSpend: 'આ મહિને હજી કોઈ ખર્ચ નથી.', noBreakdown: 'વિગત જોવા માટે પહેલા ખર્ચ ઉમેરો.', noCsvData: 'હજુ કોઈ ડેટા નથી, ડાઉનલોડ કરવા માટે કંઈ નથી.', csvDownloaded: 'CSV ફાઇલ ડાઉનલોડ થઈ ગઈ', budgetSet: 'બજેટ સેટ થયું',
+    csvDate: 'તારીખ', csvItem: 'વસ્તુ', csvAmount: 'રકમ (INR)'
+  },
+  hi: {
+    documentTitle: 'घर का हिसाब | रोज़ का खर्च', languageLabel: 'भाषा', avatarMark: 'घ', otherItem: 'अन्य चीज़', brandTitle: 'घर का हिसाब', brandTagline: 'सरल और स्पष्ट', navLabel: 'मुख्य मेनू', navHome: 'होम', navEntries: 'दैनिक हिसाब', navAnalysis: 'मासिक विश्लेषण', theme: 'थीम', sidebarNote: 'आपका हिसाब', autoSaved: 'अपने आप सेव होता है',
+    csvDownload: 'CSV डाउनलोड करें', today: 'आज', greeting: 'नमस्ते, घर!', homeQuestion: 'आज क्या खर्च हुआ?', homeHint: 'किसी भी तारीख को चुनकर हिसाब लिखें।', addExpense: '＋ खर्च जोड़ें', budgetInitial: 'मासिक बजट सेट करें', budgetPlaceholder: '₹ बजट राशि', setBudget: 'सेट करें', calendar: 'कैलेंडर', previousMonth: 'पिछला महीना', nextMonth: 'अगला महीना',
+    sun: 'रवि', mon: 'सोम', tue: 'मंगल', wed: 'बुध', thu: 'गुरु', fri: 'शुक्र', sat: 'शनि', recentDays: 'हाल के दिन', recentNotes: 'आपकी पिछली प्रविष्टियाँ', viewAll: 'सभी देखें →', backHome: '← होम पर जाएँ', selectedDate: 'चुनी हुई तारीख', itemsToday: 'आज की चीज़ें', allExpenses: 'आपके सभी खर्च यहाँ दिखेंगे', searchPlaceholder: 'चीज़ खोजें...', addAnotherItem: '＋ एक और चीज़ जोड़ें', dailyTotal: 'आज का कुल हिसाब', totalItems: 'कुल चीज़ें', saveLedger: 'हिसाब सेव करें',
+    whereMoneyGoes: 'आपका खर्च कहाँ जाता है?', monthlyAnalysis: 'मासिक विश्लेषण', analysisHint: 'पूरे महीने का हिसाब एक नज़र में देखें।', dailyExpenses: 'दिन के अनुसार खर्च', dailyExpensesHint: 'इस महीने किस दिन सबसे ज़्यादा खर्च हुआ?', itemExpenses: 'चीज़ के अनुसार खर्च', itemExpensesHint: 'किस चीज़ पर सबसे ज़्यादा खर्च हुआ?', itemBreakdown: 'चीज़ों का विस्तृत हिसाब', itemBreakdownHint: 'इस महीने की हर चीज़ का कुल',
+    categoryVegetables: 'सब्ज़ियाँ', categoryFruits: 'फल', categoryGroceries: 'किराना', categoryPrompt: '{category} चुनें', categoryBack: '← श्रेणियाँ', monthBudgetSet: '{month} का बजट सेट करें', monthBudget: '{month} का बजट: {amount}', amountSpent: '{amount} खर्च हुए', budgetOver: '⚠ बजट से {amount} अधिक खर्च हुआ', budgetNear: '⚠ बजट लगभग पूरा होने वाला है',
+    monthSpend: 'इस महीने का कुल खर्च', daysSpent: 'खर्च वाले दिन', dailyAverage: 'रोज़ का औसत', days: 'दिन', itemCount: '{count} चीज़', itemsCount: '{count} चीज़ें', noRecent: 'अभी तक कोई हिसाब नहीं है।', firstExpense: 'आज का पहला खर्च जोड़ें!', noItems: 'इस तारीख़ पर अभी कोई चीज़ नहीं जोड़ी गई', noSearchResults: 'इस खोज में कुछ नहीं मिला', itemNamePlaceholder: 'चीज़ का नाम', pricePlaceholder: '₹ कीमत', deleteItem: 'हटाएँ',
+    saveError: 'सेव करने में समस्या हुई। फिर कोशिश करें।', saveToast: 'हिसाब सेव हो गया', deleteToast: '"{name}" हटाया गया', undo: 'वापस लाएँ', analysisTotal: 'कुल मासिक खर्च', analysisItems: 'कुल चीज़ें', highestDay: 'सबसे ज़्यादा खर्च वाला दिन', noMonthSpend: 'इस महीने अभी कोई खर्च नहीं है।', noBreakdown: 'विवरण देखने के लिए पहले खर्च जोड़ें।', noCsvData: 'अभी डाउनलोड करने के लिए कोई डेटा नहीं है।', csvDownloaded: 'CSV फ़ाइल डाउनलोड हो गई', budgetSet: 'बजट सेट हो गया',
+    csvDate: 'तारीख़', csvItem: 'चीज़', csvAmount: 'राशि (INR)'
+  },
+  en: {
+    documentTitle: 'Home Ledger | Daily Expenses', languageLabel: 'Language', avatarMark: 'H', otherItem: 'Other item', brandTitle: 'Home Ledger', brandTagline: 'Simple and clear', navLabel: 'Main menu', navHome: 'Home', navEntries: 'Daily ledger', navAnalysis: 'Monthly analysis', theme: 'Theme', sidebarNote: 'Your ledger', autoSaved: 'Saved automatically',
+    csvDownload: 'Download CSV', today: 'Today', greeting: 'Hello, home!', homeQuestion: 'What did you spend today?', homeHint: 'Choose any date to enter your expenses.', addExpense: '＋ Add expense', budgetInitial: 'Set a monthly budget', budgetPlaceholder: '₹ Budget amount', setBudget: 'Set budget', calendar: 'Calendar', previousMonth: 'Previous month', nextMonth: 'Next month',
+    sun: 'Sun', mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', recentDays: 'Recent days', recentNotes: 'Your latest entries', viewAll: 'View all →', backHome: '← Back home', selectedDate: 'Selected date', itemsToday: 'Today’s items', allExpenses: 'All your expenses will appear here', searchPlaceholder: 'Search items...', addAnotherItem: '＋ Add another item', dailyTotal: 'Today’s total', totalItems: 'Total items', saveLedger: 'Save ledger',
+    whereMoneyGoes: 'Where does your money go?', monthlyAnalysis: 'Monthly analysis', analysisHint: 'See the whole month at a glance.', dailyExpenses: 'Spending by day', dailyExpensesHint: 'Which day had the highest spending this month?', itemExpenses: 'Spending by item', itemExpensesHint: 'Which items cost the most?', itemBreakdown: 'Item breakdown', itemBreakdownHint: 'Totals for every item this month',
+    categoryVegetables: 'Vegetables', categoryFruits: 'Fruits', categoryGroceries: 'Groceries', categoryPrompt: 'Choose {category}', categoryBack: '← Categories', monthBudgetSet: 'Set a budget for {month}', monthBudget: '{month} budget: {amount}', amountSpent: '{amount} spent', budgetOver: '⚠ You are {amount} over budget', budgetNear: '⚠ You are close to your budget limit',
+    monthSpend: 'Total spent this month', daysSpent: 'Days with spending', dailyAverage: 'Average per day', days: 'days', itemCount: '{count} item', itemsCount: '{count} items', noRecent: 'No entries yet.', firstExpense: 'Add your first expense today!', noItems: 'No items have been added for this date yet', noSearchResults: 'No items match this search', itemNamePlaceholder: 'Item name', pricePlaceholder: '₹ Price', deleteItem: 'Delete item',
+    saveError: 'Could not save. Please try again.', saveToast: 'Ledger saved', deleteToast: '"{name}" deleted', undo: 'Undo', analysisTotal: 'Total monthly spending', analysisItems: 'Total items', highestDay: 'Highest-spending day', noMonthSpend: 'No spending recorded this month.', noBreakdown: 'Add expenses to see a breakdown.', noCsvData: 'There is no data to download yet.', csvDownloaded: 'CSV file downloaded', budgetSet: 'Budget set',
+    csvDate: 'Date', csvItem: 'Item', csvAmount: 'Amount (INR)'
+  }
+};
+const CATALOG_TRANSLATIONS = {
+  hi: {
+    'દૂધ': 'दूध', 'ગેસ સિલિન્ડર': 'गैस सिलेंडर', 'વીજળી બિલ': 'बिजली बिल', 'પેટ્રોલ': 'पेट्रोल',
+    'બટેટા': 'आलू', 'ડુંગળી': 'प्याज़', 'ટામેટાં': 'टमाटर', 'રીંગણ': 'बैंगन', 'ભીંડા': 'भिंडी', 'દૂધી': 'लौकी', 'તુરીયા': 'तोरई', 'કારેલા': 'करेला', 'ટીંડોળા': 'कुंदरू', 'પરવળ': 'परवल', 'ગવાર': 'ग्वार फली', 'ફણસી': 'हरी फलियाँ', 'લીલા વટાણા': 'हरी मटर', 'કોબી': 'पत्ता गोभी', 'ફૂલકોબી': 'फूलगोभी', 'બ્રોકોલી': 'ब्रोकली', 'ગાજર': 'गाजर', 'મૂળા': 'मूली', 'બીટ': 'चुकंदर', 'શક્કરિયા': 'शकरकंद', 'કાકડી': 'खीरा', 'કેપ્સિકમ': 'शिमला मिर्च', 'લીલાં મરચાં': 'हरी मिर्च', 'લસણ': 'लहसुन', 'આદુ': 'अदरक', 'પાલક': 'पालक', 'મેથી': 'मेथी', 'ધાણા': 'धनिया', 'લીલી ડુંગળી': 'हरा प्याज़', 'મકાઈ': 'मक्का', 'કોળું': 'कद्दू', 'સરગવાની શીંગ': 'सहजन की फली', 'કાચું કેળું': 'कच्चा केला', 'અરબી': 'अरबी', 'સુરણ': 'जिमीकंद', 'લીંબુ': 'नींबू',
+    'સફરજન': 'सेब', 'કેળું': 'केला', 'કેરી': 'आम', 'દ્રાક્ષ': 'अंगूर', 'દાડમ': 'अनार', 'સંતરું': 'संतरा', 'મોસંબી': 'मौसंबी', 'પપૈયું': 'पपीता', 'તરબૂચ': 'तरबूज़', 'ટેટી': 'खरबूजा', 'ખરબૂચું': 'खरबूजा', 'અનાનસ': 'अनानास', 'જામફળ': 'अमरूद', 'ચીકુ': 'चीकू', 'સીતાફળ': 'सीताफल', 'રામફળ': 'रामफल', 'જાંબુ': 'जामुन', 'નારિયેળ': 'नारियल', 'લીચી': 'लीची', 'સ્ટ્રોબેરી': 'स्ट्रॉबेरी', 'નાશપાતી': 'नाशपाती', 'કીવી': 'कीवी', 'આલુબુખારા': 'आलूबुखारा', 'પીચ': 'आड़ू', 'ચેરી': 'चेरी', 'અંજીર': 'अंजीर', 'ખજૂર': 'खजूर', 'આમળા': 'आंवला', 'બોર': 'बेर', 'ફણસ': 'कटहल', 'કમરખ': 'कमरख', 'ડ્રેગન ફ્રૂટ': 'ड्रैगन फ्रूट', 'એવોકાડો': 'एवोकाडो', 'કાળી દ્રાક્ષ': 'काले अंगूर', 'લીલું સફરજન': 'हरा सेब', 'કાળી જામફળ': 'काला अमरूद',
+    'ચોખા': 'चावल', 'ઘઉંનો લોટ': 'गेहूँ का आटा', 'બેસન': 'बेसन', 'સોજી': 'सूजी', 'પૌંઆ': 'पोहा', 'મમરા': 'मुरमुरा', 'તુવેર દાળ': 'अरहर दाल', 'મગની દાળ': 'मूंग दाल', 'ચણાની દાળ': 'चना दाल', 'મસૂર દાળ': 'मसूर दाल', 'અડદ દાળ': 'उड़द दाल', 'રાજમા': 'राजमा', 'ચણા': 'चना', 'કાબુલી ચણા': 'काबुली चना', 'મગ': 'मूंग', 'ખાદ્ય તેલ': 'खाने का तेल', 'ઘી': 'घी', 'માખણ': 'मक्खन', 'ખાંડ': 'चीनी', 'ગોળ': 'गुड़', 'મીઠું': 'नमक', 'ચા': 'चाय', 'કોફી': 'कॉफ़ी', 'હળદર': 'हल्दी', 'લાલ મરચું પાવડર': 'लाल मिर्च पाउडर', 'ધાણા-જીરું પાવડર': 'धनिया-जीरा पाउडर', 'જીરું': 'जीरा', 'રાઈ': 'राई', 'ગરમ મસાલો': 'गरम मसाला', 'હિંગ': 'हींग', 'અથાણું': 'अचार', 'પાપડ': 'पापड़', 'સેવ / નમકીન': 'सेव / नमकीन', 'બિસ્કિટ': 'बिस्कुट', 'સાબુ': 'साबुन', 'ડિટર્જન્ટ': 'डिटर्जेंट'
+  },
+  en: {
+    'દૂધ': 'Milk', 'ગેસ સિલિન્ડર': 'Gas cylinder', 'વીજળી બિલ': 'Electricity bill', 'પેટ્રોલ': 'Petrol',
+    'બટેટા': 'Potato', 'ડુંગળી': 'Onion', 'ટામેટાં': 'Tomatoes', 'રીંગણ': 'Eggplant', 'ભીંડા': 'Okra', 'દૂધી': 'Bottle gourd', 'તુરીયા': 'Ridge gourd', 'કારેલા': 'Bitter gourd', 'ટીંડોળા': 'Ivy gourd', 'પરવળ': 'Pointed gourd', 'ગવાર': 'Cluster beans', 'ફણસી': 'Green beans', 'લીલા વટાણા': 'Green peas', 'કોબી': 'Cabbage', 'ફૂલકોબી': 'Cauliflower', 'બ્રોકોલી': 'Broccoli', 'ગાજર': 'Carrot', 'મૂળા': 'Radish', 'બીટ': 'Beetroot', 'શક્કરિયા': 'Sweet potato', 'કાકડી': 'Cucumber', 'કેપ્સિકમ': 'Bell pepper', 'લીલાં મરચાં': 'Green chili', 'લસણ': 'Garlic', 'આદુ': 'Ginger', 'પાલક': 'Spinach', 'મેથી': 'Fenugreek leaves', 'ધાણા': 'Coriander', 'લીલી ડુંગળી': 'Spring onion', 'મકાઈ': 'Corn', 'કોળું': 'Pumpkin', 'સરગવાની શીંગ': 'Drumstick', 'કાચું કેળું': 'Raw banana', 'અરબી': 'Taro root', 'સુરણ': 'Yam', 'લીંબુ': 'Lemon',
+    'સફરજન': 'Apple', 'કેળું': 'Banana', 'કેરી': 'Mango', 'દ્રાક્ષ': 'Grapes', 'દાડમ': 'Pomegranate', 'સંતરું': 'Orange', 'મોસંબી': 'Sweet lime', 'પપૈયું': 'Papaya', 'તરબૂચ': 'Watermelon', 'ટેટી': 'Muskmelon', 'ખરબૂચું': 'Cantaloupe', 'અનાનસ': 'Pineapple', 'જામફળ': 'Guava', 'ચીકુ': 'Sapodilla', 'સીતાફળ': 'Custard apple', 'રામફળ': 'Ramphal', 'જાંબુ': 'Java plum', 'નારિયેળ': 'Coconut', 'લીચી': 'Lychee', 'સ્ટ્રોબેરી': 'Strawberry', 'નાશપાતી': 'Pear', 'કીવી': 'Kiwi', 'આલુબુખારા': 'Plum', 'પીચ': 'Peach', 'ચેરી': 'Cherry', 'અંજીર': 'Fig', 'ખજૂર': 'Dates', 'આમળા': 'Indian gooseberry', 'બોર': 'Indian jujube', 'ફણસ': 'Jackfruit', 'કમરખ': 'Star fruit', 'ડ્રેગન ફ્રૂટ': 'Dragon fruit', 'એવોકાડો': 'Avocado', 'કાળી દ્રાક્ષ': 'Black grapes', 'લીલું સફરજન': 'Green apple', 'કાળી જામફળ': 'Black guava',
+    'ચોખા': 'Rice', 'ઘઉંનો લોટ': 'Wheat flour', 'બેસન': 'Gram flour', 'સોજી': 'Semolina', 'પૌંઆ': 'Flattened rice', 'મમરા': 'Puffed rice', 'તુવેર દાળ': 'Toor dal', 'મગની દાળ': 'Moong dal', 'ચણાની દાળ': 'Chana dal', 'મસૂર દાળ': 'Masoor dal', 'અડદ દાળ': 'Urad dal', 'રાજમા': 'Kidney beans', 'ચણા': 'Chickpeas', 'કાબુલી ચણા': 'White chickpeas', 'મગ': 'Mung beans', 'ખાદ્ય તેલ': 'Cooking oil', 'ઘી': 'Ghee', 'માખણ': 'Butter', 'ખાંડ': 'Sugar', 'ગોળ': 'Jaggery', 'મીઠું': 'Salt', 'ચા': 'Tea', 'કોફી': 'Coffee', 'હળદર': 'Turmeric', 'લાલ મરચું પાવડર': 'Red chili powder', 'ધાણા-જીરું પાવડર': 'Coriander-cumin powder', 'જીરું': 'Cumin', 'રાઈ': 'Mustard seeds', 'ગરમ મસાલો': 'Garam masala', 'હિંગ': 'Asafoetida', 'અથાણું': 'Pickle', 'પાપડ': 'Papad', 'સેવ / નમકીન': 'Sev / namkeen', 'બિસ્કિટ': 'Biscuits', 'સાબુ': 'Soap', 'ડિટર્જન્ટ': 'Detergent'
+  }
+};
+const APP_LOCALES = { gu: 'gu-IN', hi: 'hi-IN', en: 'en-IN' };
+
+const $ = (selector) => document.querySelector(selector);
+
+function locale() { return APP_LOCALES[state.language] || APP_LOCALES.gu; }
+function t(key, values = {}) {
+  let text = UI_TEXT[state.language]?.[key] || UI_TEXT.gu[key] || key;
+  Object.entries(values).forEach(([name, value]) => { text = text.replaceAll(`{${name}}`, value); });
+  return text;
+}
+function displayItemName(name) { return CATALOG_TRANSLATIONS[state.language]?.[name] || name; }
+function itemCountText(count) { return t(count === 1 ? 'itemCount' : 'itemsCount', { count }); }
+function monthName(month) { return new Intl.DateTimeFormat(locale(), { month: 'long' }).format(new Date(2026, month, 1)); }
+function dayName(day, style = 'long') {
+  const date = new Date(2026, 0, 4 + day);
+  return new Intl.DateTimeFormat(locale(), { weekday: style }).format(date);
+}
+
+function toISO(date) { return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 10); }
+function parseISO(value) { const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day); }
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (err) {
+    console.error('Storage read failed for', key, err);
+    return fallback;
+  }
+}
+function saveJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (err) {
+    console.error('Storage write failed for', key, err);
+    showToast(t('saveError'));
+    return false;
+  }
+}
+function saveExpenses() { saveJSON(STORAGE_KEY, state.expenses); }
+function saveBudgets() { saveJSON(BUDGET_KEY, state.budgets); }
+
+function money(value) { return `₹${Math.round(value || 0).toLocaleString(locale())}`; }
+function dateText(iso, includeYear = false) {
+  const options = { day: 'numeric', month: 'long' };
+  if (includeYear) options.year = 'numeric';
+  return new Intl.DateTimeFormat(locale(), options).format(parseISO(iso));
+}
+function monthKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
+function entriesFor(date) { return state.expenses[date] || []; }
+function totalFor(date) { return entriesFor(date).reduce((sum, item) => sum + (Number(item.price) || 0), 0); }
+function monthEntries(date) { const prefix = monthKey(date); return Object.entries(state.expenses).filter(([key]) => key.startsWith(prefix)); }
+function monthTotal(date) { return monthEntries(date).reduce((sum, [, entries]) => sum + entries.reduce((part, item) => part + (Number(item.price) || 0), 0), 0); }
+
+function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char])); }
+
+/* ---------- toast / undo ---------- */
+let toastTimer = null;
+function showToast(message, actionLabel, actionFn) {
+  const toast = $('#toast');
+  $('#toastMsg').textContent = message;
+  const btn = $('#toastAction');
+  if (actionLabel && actionFn) {
+    btn.textContent = actionLabel;
+    btn.style.display = 'inline-block';
+    btn.onclick = () => { actionFn(); toast.classList.remove('show'); };
+  } else {
+    btn.style.display = 'none';
+    btn.onclick = null;
+  }
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+/* ---------- theme ---------- */
+function applyLanguage() {
+  if (!UI_TEXT[state.language]) state.language = 'gu';
+  document.documentElement.lang = state.language;
+  document.title = t('documentTitle');
+  $('#languageSelect').value = state.language;
+  document.querySelectorAll('[data-i18n]').forEach((element) => { element.textContent = t(element.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => { element.placeholder = t(element.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach((element) => { element.title = t(element.dataset.i18nTitle); });
+  document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => { element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel)); });
+}
+function setLanguage(language) {
+  if (!UI_TEXT[language]) return;
+  state.language = language;
+  saveJSON(LANGUAGE_KEY, language);
+  applyLanguage();
+  renderHome();
+  renderEntries();
+  renderAnalysis();
+}
+
+function applyTheme(theme) {
+  if (theme === 'light' || theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', theme);
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  $('#lightBtn').classList.toggle('active', theme === 'light');
+  $('#darkBtn').classList.toggle('active', theme === 'dark');
+}
+function setTheme(theme) { saveJSON(THEME_KEY, theme); applyTheme(theme); }
+
+/* ---------- view routing ---------- */
+function setView(view) {
+  document.querySelectorAll('.view').forEach((item) => item.classList.toggle('active', item.id === `${view}View`));
+  document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.view === view));
+  if (view === 'home') renderHome();
+  if (view === 'entries') { state.searchTerm = ''; renderEntries(); }
+  if (view === 'analysis') renderAnalysis();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  const now = new Date();
+  $('#todayLabel').textContent = `${dayName(now.getDay())}, ${dateText(toISO(now))}`;
+  $('#pageTitle').textContent = t('greeting');
+  $('#calendarMonthLabel').textContent = `${monthName(state.calendarDate.getMonth())} ${state.calendarDate.getFullYear()}`;
+  renderCalendar();
+  renderHomeStats();
+  renderRecent();
+  renderBudget();
+}
+
+function renderHomeStats() {
+  const total = monthTotal(state.calendarDate);
+  const days = monthEntries(state.calendarDate).filter(([, items]) => items.length).length;
+  const average = days ? total / days : 0;
+  $('#homeStats').innerHTML = `
+    <div class="stat-card"><span class="stat-icon">◷</span><div class="stat-label">${t('monthSpend')}</div><div class="stat-value">${money(total)}</div></div>
+    <div class="stat-card"><span class="stat-icon">▦</span><div class="stat-label">${t('daysSpent')}</div><div class="stat-value">${days} ${t('days')}</div></div>
+    <div class="stat-card"><span class="stat-icon">↗</span><div class="stat-label">${t('dailyAverage')}</div><div class="stat-value">${money(average)}</div></div>`;
+}
+
+function renderBudget() {
+  const key = monthKey(state.calendarDate);
+  const budget = Number(state.budgets[key]) || 0;
+  const spent = monthTotal(state.calendarDate);
+  const pct = budget ? Math.min((spent / budget) * 100, 100) : 0;
+  const fill = $('#budgetFill');
+  fill.style.width = `${pct}%`;
+  fill.classList.toggle('over', budget > 0 && spent > budget);
+  $('#budgetInput').value = budget || '';
+  if (!budget) {
+    $('#budgetTitle').textContent = t('monthBudgetSet', { month: monthName(state.calendarDate.getMonth()) });
+    $('#budgetStatus').textContent = '';
+    $('#budgetWarning').textContent = '';
+  } else {
+    $('#budgetTitle').textContent = t('monthBudget', { month: monthName(state.calendarDate.getMonth()), amount: money(budget) });
+    $('#budgetStatus').textContent = t('amountSpent', { amount: money(spent) });
+    $('#budgetWarning').textContent = spent > budget ? t('budgetOver', { amount: money(spent - budget) }) : (pct > 85 ? t('budgetNear') : '');
+  }
+}
+
+function renderCalendar() {
+  const year = state.calendarDate.getFullYear();
+  const month = state.calendarDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const days = new Date(year, month + 1, 0).getDate();
+  const budget = Number(state.budgets[monthKey(state.calendarDate)]) || 0;
+  const dailyBudget = budget ? budget / days : 0;
+  let html = '';
+  for (let i = 0; i < firstDay; i += 1) html += '<div class="cal-day empty"></div>';
+  for (let day = 1; day <= days; day += 1) {
+    const iso = toISO(new Date(year, month, day));
+    const total = totalFor(iso);
+    const classes = ['cal-day'];
+    if (iso === state.selectedDate) classes.push('selected');
+    if (iso === toISO(new Date())) classes.push('today');
+    if (dailyBudget && total > dailyBudget * 1.5) classes.push('over-budget');
+    html += `<button class="${classes.join(' ')}" data-date="${iso}"><span class="day-number">${day}</span>${total ? `<span class="day-total">${money(total)}</span>` : ''}</button>`;
+  }
+  $('#calendarGrid').innerHTML = html;
+  document.querySelectorAll('.cal-day[data-date]').forEach((button) => button.addEventListener('click', () => { state.selectedDate = button.dataset.date; setView('entries'); }));
+}
+
+function renderRecent() {
+  const recent = Object.keys(state.expenses).filter((date) => entriesFor(date).length).sort().reverse().slice(0, 5);
+  $('#recentDays').innerHTML = recent.length ? recent.map((date) => `
+    <button class="recent-row" data-date="${date}">
+      <span class="recent-date"><span class="date-badge">${parseISO(date).getDate()}</span><span><strong>${dateText(date)}</strong><small>${itemCountText(entriesFor(date).length)}</small></span></span>
+      <span class="recent-amount">${money(totalFor(date))}</span>
+    </button>`).join('') : `<div class="no-data">${t('noRecent')}<br>${t('firstExpense')}</div>`;
+  document.querySelectorAll('.recent-row').forEach((row) => row.addEventListener('click', () => { state.selectedDate = row.dataset.date; setView('entries'); }));
+}
+
+/* ---------- entries ---------- */
+function renderQuickChips() {
+  const container = $('#quickChips');
+  if (state.quickCategory) {
+    const catalog = itemCatalogs[state.quickCategory];
+    container.innerHTML = `
+      <div class="catalog-picker">
+        <div class="catalog-heading"><button class="catalog-back" id="catalogBack">${t('categoryBack')}</button><strong>${catalog.emoji} ${t('categoryPrompt', { category: t(`category${state.quickCategory[0].toUpperCase()}${state.quickCategory.slice(1)}`) })}</strong></div>
+        <div class="catalog-grid">${catalog.items.map(([name, emoji]) => `<button class="catalog-item" data-catalog-name="${escapeHtml(name)}"><span class="catalog-emoji">${emoji}</span>${escapeHtml(displayItemName(name))}</button>`).join('')}</div>
+      </div>`;
+    $('#catalogBack').addEventListener('click', () => { state.quickCategory = null; renderQuickChips(); });
+    container.querySelectorAll('.catalog-item').forEach((button) => button.addEventListener('click', () => addItem(button.dataset.catalogName)));
+    return;
+  }
+  container.innerHTML = Object.entries(itemCatalogs).map(([key, catalog]) => `<button class="chip" data-category="${key}">${catalog.emoji} ${t(`category${key[0].toUpperCase()}${key.slice(1)}`)}</button>`).join('')
+    + defaultItems.map((name) => `<button class="chip" data-name="${escapeHtml(name)}">＋ ${escapeHtml(displayItemName(name))}</button>`).join('');
+  container.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.quickCategory = button.dataset.category; renderQuickChips(); }));
+  container.querySelectorAll('.chip[data-name]').forEach((chip) => chip.addEventListener('click', () => addItem(chip.dataset.name)));
+}
+
+function renderEntries() {
+  const date = parseISO(state.selectedDate);
+  $('#selectedDateTitle').textContent = dateText(state.selectedDate, true);
+  $('#selectedDateSub').textContent = dayName(date.getDay());
+  $('#datePicker').value = state.selectedDate;
+  renderQuickChips();
+  $('#searchInput').value = state.searchTerm;
+
+  const allEntries = entriesFor(state.selectedDate);
+  const term = state.searchTerm.trim().toLowerCase();
+  const visibleIndexes = allEntries
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => !term || item.name.toLowerCase().includes(term) || displayItemName(item.name).toLowerCase().includes(term));
+
+  $('#itemCount').textContent = itemCountText(allEntries.length);
+  $('#totalItems').textContent = allEntries.length;
+  $('#dailyTotal').textContent = money(totalFor(state.selectedDate));
+
+  if (!allEntries.length) {
+    $('#itemsList').innerHTML = `<div class="empty-state"><span>＋</span>${t('noItems')}</div>`;
+  } else if (!visibleIndexes.length) {
+    $('#itemsList').innerHTML = `<div class="empty-state"><span>🔍</span>${t('noSearchResults')}</div>`;
+  } else {
+    $('#itemsList').innerHTML = visibleIndexes.map(({ item, index }) => `
+      <div class="item-row">
+        <input class="item-input" data-index="${index}" data-field="name" value="${escapeHtml(displayItemName(item.name))}" placeholder="${t('itemNamePlaceholder')}" />
+        <input class="price-input" data-index="${index}" data-field="price" type="number" min="0" value="${item.price || ''}" placeholder="${t('pricePlaceholder')}" />
+        <button class="remove-item" data-index="${index}" title="${t('deleteItem')}">×</button>
+      </div>`).join('');
+  }
+
+  document.querySelectorAll('.item-input,.price-input').forEach((input) => input.addEventListener('input', updateItem));
+  document.querySelectorAll('.remove-item').forEach((button) => button.addEventListener('click', () => removeItem(Number(button.dataset.index))));
+}
+
+function updateItem(event) {
+  const index = Number(event.target.dataset.index);
+  const field = event.target.dataset.field;
+  if (!state.expenses[state.selectedDate] || !state.expenses[state.selectedDate][index]) return;
+  state.expenses[state.selectedDate][index][field] = field === 'price' ? Number(event.target.value) || 0 : event.target.value;
+  saveExpenses();
+  $('#dailyTotal').textContent = money(totalFor(state.selectedDate));
+  $('#totalItems').textContent = entriesFor(state.selectedDate).length;
+  renderCalendar();
+}
+
+function addItem(prefillName) {
+  if (!state.expenses[state.selectedDate]) state.expenses[state.selectedDate] = [];
+  state.expenses[state.selectedDate].push({ name: prefillName || '', price: 0 });
+  saveExpenses();
+  state.searchTerm = '';
+  renderEntries();
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.item-input');
+    const last = inputs[inputs.length - 1];
+    if (last) { last.focus(); if (prefillName) document.querySelectorAll('.price-input')[inputs.length - 1]?.focus(); }
+  }, 0);
+}
+
+function removeItem(index) {
+  const list = state.expenses[state.selectedDate];
+  if (!list) return;
+  const [removed] = list.splice(index, 1);
+  if (!list.length) delete state.expenses[state.selectedDate];
+  saveExpenses();
+  renderEntries();
+  renderCalendar();
+  const dateForUndo = state.selectedDate;
+  showToast(t('deleteToast', { name: displayItemName(removed.name || 'વસ્તુ') }), t('undo'), () => {
+    if (!state.expenses[dateForUndo]) state.expenses[dateForUndo] = [];
+    state.expenses[dateForUndo].splice(index, 0, removed);
+    saveExpenses();
+    if (state.selectedDate === dateForUndo) renderEntries();
+    renderCalendar();
+  });
+}
+
+/* ---------- analysis ---------- */
+function renderAnalysis() {
+  const date = state.analysisDate;
+  $('#analysisMonthLabel').textContent = `${monthName(date.getMonth())} ${date.getFullYear()}`;
+  const total = monthTotal(date);
+  const records = monthEntries(date);
+  const items = records.reduce((sum, [, list]) => sum + list.length, 0);
+  const dayTotals = records.map(([, list]) => list.reduce((s, item) => s + Number(item.price || 0), 0));
+  const highest = dayTotals.length ? Math.max(...dayTotals) : 0;
+  $('#analysisStats').innerHTML = `
+    <div class="stat-card"><span class="stat-icon">₹</span><div class="stat-label">${t('analysisTotal')}</div><div class="stat-value">${money(total)}</div></div>
+    <div class="stat-card"><span class="stat-icon">◌</span><div class="stat-label">${t('analysisItems')}</div><div class="stat-value">${items}</div></div>
+    <div class="stat-card"><span class="stat-icon">⌁</span><div class="stat-label">${t('highestDay')}</div><div class="stat-value">${money(highest)}</div></div>`;
+  renderDailyChart(date);
+  renderCategoryChart(date);
+  renderBreakdown(date);
+}
+
+function renderDailyChart(date) {
+  const days = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const values = Array.from({ length: days }, (_, i) => totalFor(toISO(new Date(date.getFullYear(), date.getMonth(), i + 1))));
+  const max = Math.max(...values, 1);
+  $('#dailyChart').innerHTML = values.map((value, i) => `
+    <div class="bar-column" title="${i + 1}: ${money(value)}">
+      <span class="bar-value">${value ? money(value) : ''}</span>
+      <div class="bar-fill" style="height:${Math.max(value ? (value / max) * 125 : 2, 2)}px"></div>
+      <span class="bar-label">${i + 1}</span>
+    </div>`).join('');
+}
+
+function aggregateItems(date) {
+  const totals = {};
+  monthEntries(date).forEach(([, list]) => list.forEach((item) => {
+    const name = item.name.trim() || t('otherItem');
+    totals[name] = (totals[name] || 0) + (Number(item.price) || 0);
+  }));
+  return Object.entries(totals).sort((a, b) => b[1] - a[1]);
+}
+
+function renderCategoryChart(date) {
+  const data = aggregateItems(date).slice(0, 5);
+  const max = data[0]?.[1] || 1;
+  $('#categoryChart').innerHTML = data.length ? data.map(([name, value]) => `
+    <div class="category-row"><span class="category-name">${escapeHtml(displayItemName(name))}</span><span class="category-track"><span class="category-fill" style="width:${(value / max) * 100}%"></span></span><span class="category-amount">${money(value)}</span></div>`).join('') : `<div class="no-data">${t('noMonthSpend')}</div>`;
+}
+
+function renderBreakdown(date) {
+  const data = aggregateItems(date);
+  const max = data[0]?.[1] || 1;
+  $('#breakdownList').innerHTML = data.length ? data.map(([name, value]) => `
+    <div class="breakdown-row"><span class="breakdown-name">${escapeHtml(displayItemName(name))}</span><span class="breakdown-bar"><span style="width:${(value / max) * 100}%"></span></span><span class="breakdown-amount">${money(value)}</span></div>`).join('') : `<div class="no-data">${t('noBreakdown')}</div>`;
+}
+
+/* ---------- csv export ---------- */
+function exportCSV() {
+  const rows = [[t('csvDate'), t('csvItem'), t('csvAmount')]];
+  Object.keys(state.expenses).sort().forEach((date) => {
+    entriesFor(date).forEach((item) => rows.push([date, displayItemName(item.name || ''), item.price || 0]));
+  });
+  if (rows.length === 1) { showToast(t('noCsvData')); return; }
+  const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `ghar-no-hisab-${toISO(new Date())}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast(t('csvDownloaded'));
+}
+
+/* ---------- month navigation ---------- */
+function moveMonth(key, amount) {
+  state[key].setMonth(state[key].getMonth() + amount);
+  key === 'calendarDate' ? renderHome() : renderAnalysis();
+}
+
+/* ---------- events ---------- */
+document.querySelectorAll('.nav-item,.back-button').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+$('#addExpenseButton').addEventListener('click', () => setView('entries'));
+$('#addLineButton').addEventListener('click', () => addItem());
+$('#saveDayButton').addEventListener('click', () => { saveExpenses(); showToast(t('saveToast')); setView('home'); });
+$('#viewAllButton').addEventListener('click', () => setView('entries'));
+$('#todayButton').addEventListener('click', () => { state.selectedDate = toISO(new Date()); state.calendarDate = new Date(); setView('entries'); });
+$('#datePicker').addEventListener('change', (event) => { state.selectedDate = event.target.value; state.searchTerm = ''; renderEntries(); });
+$('#prevMonth').addEventListener('click', () => moveMonth('calendarDate', -1));
+$('#nextMonth').addEventListener('click', () => moveMonth('calendarDate', 1));
+$('#analysisPrev').addEventListener('click', () => moveMonth('analysisDate', -1));
+$('#analysisNext').addEventListener('click', () => moveMonth('analysisDate', 1));
+$('#searchInput').addEventListener('input', (event) => { state.searchTerm = event.target.value; renderEntries(); });
+$('#exportCsvButton').addEventListener('click', exportCSV);
+$('#setBudgetButton').addEventListener('click', () => {
+  const key = monthKey(state.calendarDate);
+  const value = Number($('#budgetInput').value) || 0;
+  if (value > 0) { state.budgets[key] = value; saveBudgets(); renderBudget(); renderCalendar(); showToast(t('budgetSet')); }
+  else { delete state.budgets[key]; saveBudgets(); renderBudget(); renderCalendar(); }
+});
+$('#lightBtn').addEventListener('click', () => setTheme('light'));
+$('#darkBtn').addEventListener('click', () => setTheme('dark'));
+$('#languageSelect').addEventListener('change', (event) => setLanguage(event.target.value));
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') $('#toast').classList.remove('show');
+});
+
+/* ---------- init ---------- */
+applyTheme(loadJSON(THEME_KEY, null));
+applyLanguage();
+renderHome();
+</script>
+</body>
+</html>
